@@ -1,0 +1,17 @@
+{
+  "name": "tiktok-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "docker compose up -d",
+    "stop": "docker compose down",
+    "restart": "docker compose restart",
+    "remotion": "cd remotion && npm start",
+    "build": "cd remotion && npm run build"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.226",
+    "@remotion/media-utils": "^4.0.226",
+    "@remotion/player": "^4.0.226"
+  }
+}
