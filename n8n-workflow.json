@@ -1,0 +1,281 @@
+{
+    "name": "TikTok Video Generator",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "expression": "*/5"
+              }
+            ]
+          }
+        },
+        "id": "c6573c94-b0d1-4f3b-b06c-c421832e3967",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          240,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://nocodb:8080/api/v1/auth/user/signin",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n            \"email\": \"ezedin@gmail.com\",\n            \"password\": \"Ezulove@21\"\n}",
+          "options": {}
+        },
+        "id": "0517e4bd-0908-4f38-a78b-cbf2e8027127",
+        "name": "Login",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          140,
+          360
+        ]
+      },
+      {
+        "parameters": {
+          "url": "http://nocodb:8080/api/v2/tables/m4r2fjg8nb0pqwg/records",
+          "method": "GET",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "xc-auth",
+                "value": "={{ $node[\"Login\"].json.token }}"
+              }
+            ]
+          },
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "where",
+                "value": "(status,eq,draft)"
+              },
+              {
+                "name": "limit",
+                "value": "10"
+              }
+            ]
+          }
+        },
+        "id": "950a6c8d-7c90-4d7c-9ba7-d0f89c5e1234",
+        "name": "Fetch Pending Content",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          480,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=http://nocodb:8080/api/v2/tables/mc75x8yzlzhwr1r/records/{{ $node[\"Fetch Pending Content\"].json.template_id }}",
+          "method": "GET",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "xc-auth",
+                "value": "={{ $node[\"Login\"].json.token }}"
+              }
+            ]
+          }
+        },
+        "id": "a7b89c12-3456-4d7c-9ba7-d0f89c5e5678",
+        "name": "Fetch Template",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          680,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=http://remotion:3000/api/render",
+          "method": "POST",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "body": {
+            "template": "={{ $node[\"Fetch Template\"].json.components }}",
+            "content": "={{ $node[\"Fetch Pending Content\"].json.content_data }}",
+            "duration": "={{ $node[\"Fetch Template\"].json.duration }}"
+          }
+        },
+        "id": "d9e01f23-4567-4d7c-9ba7-d0f89c5e9012",
+        "name": "Trigger Remotion Render",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          900,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "fileName": "={{ $node[\"Fetch Pending Content\"].json.id }}.mp4",
+          "binaryPropertyName": "data",
+          "options": {
+            "fileName": "={{ $node[\"Fetch Pending Content\"].json.id }}.mp4"
+          }
+        },
+        "id": "e2f34g56-5678-4d7c-9ba7-d0f89c5e3456",
+        "name": "Write Video File",
+        "type": "n8n-nodes-base.writeBinaryFile",
+        "position": [
+          1120,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=http://nocodb:8080/api/v2/tables/m4r2fjg8nb0pqwg/records/{{ $node[\"Fetch Pending Content\"].json.id }}",
+          "method": "PATCH",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "xc-auth",
+                "value": "={{ $node[\"Login\"].json.token }}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "body": {
+            "status": "completed"
+          }
+        },
+        "id": "h5i67j89-6789-4d7c-9ba7-d0f89c5e7890",
+        "name": "Update Content Status",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          1340,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "url": "http://nocodb:8080/api/v2/tables/mmtbqwbocnazv7y/records",
+          "method": "POST",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "xc-auth",
+                "value": "={{ $node[\"Login\"].json.token }}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "body": {
+            "content_id": "={{ $node[\"Fetch Pending Content\"].json.id }}",
+            "template_id": "={{ $node[\"Fetch Pending Content\"].json.template_id }}",
+            "s3_key": "={{ $node[\"Fetch Pending Content\"].json.id }}.mp4",
+            "status": "completed",
+            "completed_at": "={{ $now }}"
+          }
+        },
+        "id": "k8l90m12-7890-4d7c-9ba7-d0f89c5e1234",
+        "name": "Record Generated Video",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          1560,
+          300
+        ]
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Login",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Login": {
+        "main": [
+          [
+            {
+              "node": "Fetch Pending Content", 
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Pending Content": {
+        "main": [
+          [
+            {
+              "node": "Fetch Template",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Template": {
+        "main": [
+          [
+            {
+              "node": "Trigger Remotion Render",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Trigger Remotion Render": {
+        "main": [
+          [
+            {
+              "node": "Write Video File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Write Video File": {
+        "main": [
+          [
+            {
+              "node": "Update Content Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Content Status": {
+        "main": [
+          [
+            {
+              "node": "Record Generated Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }

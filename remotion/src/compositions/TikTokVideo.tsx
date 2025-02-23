@@ -1,5 +1,3 @@
-// src/compositions/TikTokVideo.tsx
-import React from "react";
 import {
   AbsoluteFill,
   Sequence,
@@ -7,6 +5,7 @@ import {
   spring,
   useCurrentFrame,
   interpolate,
+  Img,
 } from "remotion";
 
 // Define our internal props interface
@@ -28,7 +27,7 @@ export const TikTokVideo = (props: Record<string, unknown>) => {
     backgroundImage = "/api/placeholder/1080/1920",
     style = "caption",
     duration = 300,
-  } = props as TikTokVideoBaseProps;
+  } = props as unknown as TikTokVideoBaseProps;
 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -67,7 +66,7 @@ export const TikTokVideo = (props: Record<string, unknown>) => {
     >
       {/* Background Image/Video */}
       <AbsoluteFill>
-        <img
+        <Img
           src={backgroundImage}
           style={{
             width: "100%",
@@ -135,7 +134,7 @@ export const TikTokVideo = (props: Record<string, unknown>) => {
         >
           {/* Left side - Image */}
           <div style={{ flex: 1 }}>
-            <img
+            <Img
               src={backgroundImage}
               style={{
                 width: "100%",

@@ -3,7 +3,7 @@
 # Configuration
 NOCODB_URL="http://localhost:8080"
 AUTH_TOKEN="" # Will be set after sign-up/login
-BASE_ID="pvusi5vh1eqgt3i"
+BASE_ID="pishobm8qy361vg"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -49,6 +49,18 @@ while ! curl -s "$NOCODB_URL/api/v1/health" > /dev/null; do
     sleep 2
 done
 
+
+# # Create admin user if not exists
+# echo "Creating admin user..."
+# SIGNUP_RESPONSE=$(curl -s -X "POST" "$NOCODB_URL/api/v1/auth/user/signup" \
+#     -H "Content-Type: application/json" \
+#     -d "{
+#     \"email\": \"admin@local.dev\",
+#     \"password\": \"Admin123!\",
+#     \"roles\": \"org-level-creator\"
+# }")
+
+
 # Login to get auth token
 echo "Logging in..."
 LOGIN_RESPONSE=$(curl -s -X "POST" "$NOCODB_URL/api/v1/auth/user/signin" \
@@ -59,6 +71,8 @@ LOGIN_RESPONSE=$(curl -s -X "POST" "$NOCODB_URL/api/v1/auth/user/signin" \
 }")
 
 AUTH_TOKEN=$(echo $LOGIN_RESPONSE | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+
+echo "Auth token: $AUTH_TOKEN"
 
 if [ -z "$AUTH_TOKEN" ]; then
     echo -e "${RED}Failed to get auth token${NC}"

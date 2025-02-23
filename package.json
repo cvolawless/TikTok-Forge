@@ -8,10 +8,5 @@
     "restart": "docker compose restart",
     "remotion": "cd remotion && npm start",
     "build": "cd remotion && npm run build"
-  },
-  "dependencies": {
-    "@remotion/cli": "^4.0.226",
-    "@remotion/media-utils": "^4.0.226",
-    "@remotion/player": "^4.0.226"
   }
 }

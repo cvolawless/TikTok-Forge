@@ -1,0 +1,205 @@
+{
+    "scenes": [
+        {
+            "script": "Welcome to QuickStart guide with Erlang's practices. Here, message sends occur in two ways, forget-and-forget and waiting for a reply. The terminology follows Erlang's syntax conventions of 'cast' and 'call' respectively.",
+            "timing": "0-15",
+            "script_audio": "audios/7b8fcf1e-fe7b-4d67-bde7-5637ef89e3ed.mp3",
+            "visual_elements": [
+                {
+                    "overlays": [
+                        {
+                            "name": "Erlang",
+                            "position": {
+                                "x": "right",
+                                "y": "top"
+                            },
+                            "size": "medium",
+                            "type": "logo"
+                        },
+                        {
+                            "content": "cast and call",
+                            "style": {
+                                "emphasis": "bold",
+                                "font_size": "large",
+                                "position": {
+                                    "x": "left",
+                                    "y": "bottom"
+                                }
+                            },
+                            "type": "text"
+                        }
+                    ],
+                    "prompt": "Illustration of two street sign posts indicating two directions - 'Forget and forget' and 'Wait for reply', a nod to Erlang's syntax conventions. Use pastel tones and a playful 2D illustration style.",
+                    "image_url": "images/027dc3b6-7b1c-4fa5-81e5-0986c081fb62.png",
+                    "type": "image"
+                }
+            ]
+        },
+        {
+            "script": "Let's start installing ractor by simply adding it to your Cargo.toml dependencies.",
+            "timing": "16-30",
+            "script_audio": "audios/7c419e8b-e10d-49f5-9ec7-c66596add134.mp3",
+            "visual_elements": [
+                {
+                    "animation": "typing",
+                    "content": "[dependencies]\nractor = \"0.9\"",
+                    "highlight_lines": [
+                        1,
+                        2
+                    ],
+                    "language": "toml",
+                    "type": "code"
+                }
+            ]
+        },
+        {
+            "script": "We start our journey by creating a 'Hello World' sample where we build an actor that prints 'Hello world' for every sent message. We start by defining our actor and the necessary bits, starting with our message definition.",
+            "timing": "31-45",
+            "script_audio": "audios/f29c1156-a857-4536-a759-56bb692eb7d8.mp3",
+            "visual_elements": [
+                {
+                    "animation": "typing",
+                    "content": "pub enum MyFirstActorMessage {\n    /// Print's hello world\n    PrintHelloWorld,\n}",
+                    "highlight_lines": [
+                        1,
+                        2,
+                        3
+                    ],
+                    "language": "rust",
+                    "type": "code"
+                }
+            ]
+        },
+        {
+            "script": "Let's dive into the basic required actor definition. We need our actor’s struct-type which is MyFirstActor, and we define our Actor behavior which requires three types",
+            "timing": "46-60",
+            "script_audio": "audios/054e4c42-529a-4f6d-9a70-a9d18203f115.mp3",
+            "visual_elements": [
+                {
+                    "animation": "fade",
+                    "content": "use ractor::{Actor, ActorRef, ActorProcessingErr};\n\npub struct MyFirstActor;\n\n#[async_trait::async_trait]\nimpl Actor for MyFirstActor {\n    type State = ();\n    type Msg = MyFirstActorMessage;\n    type Arguments = ();\n\n    async fn pre_start(&self, _myself: ActorRef<Self::Msg>, _arguments: Self::Arguments)\n        -> Result<Self::State, ActorProcessingErr> \n    {\n        Ok(())\n    }\n}",
+                    "highlight_lines": [
+                        4,
+                        7,
+                        8,
+                        11,
+                        12,
+                        13
+                    ],
+                    "language": "rust",
+                    "type": "code"
+                },
+                {
+                    "name": "Rust",
+                    "position": {
+                        "x": "left",
+                        "y": "middle"
+                    },
+                    "size": "medium",
+                    "type": "logo"
+                }
+            ]
+        },
+        {
+            "script": "The next step is to put our bits to work and print 'Hello world'! We do this by defining the handle() method, our message handler that executes for every received message in the queue.",
+            "timing": "61-75",
+            "script_audio": "audios/0e790d67-b10f-4607-a0cb-ff80cb5c1037.mp3",
+            "visual_elements": [
+                {
+                    "animation": "typing",
+                    "content": "#[async_trait::async_trait]\nimpl Actor for MyFirstActor {\n    type State = ();\n    type Msg = MyFirstActorMessage;\n    type Arguments = ();\n\n    async fn pre_start(&self, _myself: ActorRef<Self::Msg>, _arguments: Self::Arguments)\n        -> Result<Self::State, ActorProcessingErr>\n    {\n        Ok(())\n    }\n\n    async fn handle(&self, _myself: ActorRef<Self::Msg>, message: Self::Msg, _state: &mut Self::State) \n        -> Result<(), ActorProcessingErr>\n    {\n        match message {\n            MyFirstActorMessage::PrintHelloWorld => {\n                println!(\"Hello world!\");\n            }\n        }\n        Ok(())\n    }\n}",
+                    "highlight_lines": [
+                        10,
+                        17
+                    ],
+                    "language": "rust",
+                    "type": "code"
+                }
+            ]
+        },
+        {
+            "script": "Now, we complete our program and make it ready to perform the 'Hello World' print task. Here's how you do it.",
+            "timing": "76-90",
+            "script_audio": "audios/8b250b5d-a04e-4452-a601-dd81adbb51f5.mp3",
+            "visual_elements": [
+                {
+                    "animation": "fade",
+                    "content": "#[tokio::main]\nasync fn main() {\n    let (actor, actor_handle) = Actor::spawn(None, MyFirstActor, ()).await.expect(\"Actor failed to start\");\n    \n    for _i in 0..10 {\n        actor.cast(MyFirstActorMessage::PrintHelloWorld).expect(\"Failed to send message to actor\");\n    }\n\n    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;\n\n    actor.stop(None);\n    actor_handle.await.unwrap();\n}",
+                    "highlight_lines": [
+                        2,
+                        4,
+                        6,
+                        7,
+                        10
+                    ],
+                    "language": "rust",
+                    "type": "code"
+                },
+                {
+                    "name": "Rust",
+                    "position": {
+                        "x": "right",
+                        "y": "bottom"
+                    },
+                    "size": "medium",
+                    "type": "logo"
+                }
+            ]
+        },
+        {
+            "script": "What happens if we want our actor to provide some information, like the number of 'Hello World' it has printed so far? Let's weave that into our code.",
+            "timing": "91-105",
+            "script_audio": "audios/40b3fa46-c58d-47f4-8df1-089d98161733.mp3",
+            "visual_elements": [
+                {
+                    "animation": "typing",
+                    "content": "use ractor::{Actor, ActorRef, ActorProcessingErr, RpcReplyPort};\n\npub enum MyFirstActorMessage {\n    /// Print's hello world\n    PrintHelloWorld,\n    /// Replies with how many hello worlds have occurred\n    HowManyHelloWorlds(RpcReplyPort<u16>),\n}\n\npub struct MyFirstActor;\n\n#[async_trait::async_trait]\nimpl Actor for MyFirstActor {\n    type State = u16;\n    type Msg = MyFirstActorMessage;\n    type Arguments = ();\n\n    async fn pre_start(&self, _myself: ActorRef<Self::Msg>, _arguments: Self::Arguments)\n        -> Result<Self::State, ActorProcessingErr>\n    {\n        Ok(0)\n    }\n\n    async fn handle(&self, _myself: ActorRef<Self::Msg>, message: Self::Msg, state: &mut Self::State) \n        -> Result<(), ActorProcessingErr>\n    {\n        match message {\n            MyFirstActorMessage::PrintHelloWorld => {\n                println!(\"Hello world!\");\n                *state += 1;\n            }\n            MyFirstActorMessage::HowManyHelloWorlds(reply) => {\n                if reply.send(*state).is_err() {\n                    println!(\"Listener dropped their port before we could reply\");\n                }\n            }\n        }\n        Ok(())\n    }\n}",
+                    "highlight_lines": [
+                        11,
+                        20,
+                        23,
+                        27
+                    ],
+                    "language": "rust",
+                    "type": "code"
+                }
+            ]
+        },
+        {
+            "script": "Just like the non-stateful example, it's time to fire it all up and see the magic happen.",
+            "timing": "106-130",
+            "script_audio": "audios/d2673dcf-b96c-471e-84c9-ba0fe7b66aa6.mp3",
+            "visual_elements": [
+                {
+                    "animation": "fade",
+                    "content": "#[tokio::main]\nasync fn main() {\n    let (actor, actor_handle) = \n        Actor::spawn(None, MyFirstActor, ())\n            .await\n            .expect(\"Actor failed to start\");\n    \n    for _i in 0..10 {\n        actor.cast(MyFirstActorMessage::PrintHelloWorld)\n            .expect(\"Failed to send message to actor\");\n    }\n\n    let hello_world_count = \n        ractor::call_t!(actor, MyFirstActorMessage::HowManyHelloWorlds, 100)\n        .expect(\"RPC failed\");\n    \n    println!(\"Actor replied with {} hello worlds!\", hello_world_count);\n\n    actor.stop(None);\n    actor_handle.await.unwrap();\n}",
+                    "highlight_lines": [
+                        10,
+                        11,
+                        12
+                    ],
+                    "language": "rust",
+                    "type": "code"
+                },
+                {
+                    "name": "Rust",
+                    "position": {
+                        "x": "right",
+                        "y": "bottom"
+                    },
+                    "size": "medium",
+                    "type": "logo"
+                }
+            ]
+        }
+    ],
+    "style_guide": {
+        "color_palette": [
+            "primary",
+            "secondary",
+            "accent"
+        ],
+        "transition_style": "fade",
+        "visual_theme": "modern"
+    }
+}
