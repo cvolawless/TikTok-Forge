@@ -30,11 +30,5 @@ TikTok Forge is an enterprise-grade video automation framework that transforms t
 - Content automation platforms
 - Video production companies
 
-## Repository Tags
-#videoautomation #tiktok #remotion #ai #contentcreation #docker #typescript #n8n #openai #automation
-
-## Project Status
-Active development
-
 ## License
 (MIT)[LICENSE]
