@@ -2,8 +2,8 @@
 
 # Configuration
 NOCODB_URL="http://localhost:8080"
-AUTH_TOKEN="" # Will be set after sign-up/login
-BASE_ID="pishobm8qy361vg"
+AUTH_TOKEN=""
+BASE_ID="" # ADD YOUR BASE ID
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -15,16 +15,24 @@ api_call() {
     local method=$1
     local endpoint=$2
     local data=$3
+    local full_url=""
+    
+    # Check if endpoint already starts with api/v1 or api/v2
+    if [[ $endpoint == api/v* ]]; then
+        full_url="$NOCODB_URL/$endpoint"
+    else
+        full_url="$NOCODB_URL/api/v1/$endpoint"
+    fi
 
     if [ -n "$data" ]; then
         curl -s -X "$method" \
-            "$NOCODB_URL/api/v1/$endpoint" \
+            "$full_url" \
             -H "Content-Type: application/json" \
             -H "xc-auth: $AUTH_TOKEN" \
             -d "$data"
     else
         curl -s -X "$method" \
-            "$NOCODB_URL/api/v1/$endpoint" \
+            "$full_url" \
             -H "Content-Type: application/json" \
             -H "xc-auth: $AUTH_TOKEN"
     fi
@@ -50,15 +58,15 @@ while ! curl -s "$NOCODB_URL/api/v1/health" > /dev/null; do
 done
 
 
-# # Create admin user if not exists
-# echo "Creating admin user..."
-# SIGNUP_RESPONSE=$(curl -s -X "POST" "$NOCODB_URL/api/v1/auth/user/signup" \
-#     -H "Content-Type: application/json" \
-#     -d "{
-#     \"email\": \"admin@local.dev\",
-#     \"password\": \"Admin123!\",
-#     \"roles\": \"org-level-creator\"
-# }")
+# Create admin user if not exists
+echo "Creating admin user..."
+SIGNUP_RESPONSE=$(curl -s -X "POST" "$NOCODB_URL/api/v1/auth/user/signup" \
+    -H "Content-Type: application/json" \
+    -d "{
+    \"email\": \"admin@local.dev\",
+    \"password\": \"Admin123!\",
+    \"roles\": \"org-level-creator\"
+ }")
 
 
 # Login to get auth token
@@ -66,8 +74,8 @@ echo "Logging in..."
 LOGIN_RESPONSE=$(curl -s -X "POST" "$NOCODB_URL/api/v1/auth/user/signin" \
     -H "Content-Type: application/json" \
     -d "{
-    \"email\": \"ezedin@gmail.com\",
-    \"password\": \"Ezulove@21\"
+    \"email\": \"admin@local.dev\",
+    \"password\": \"Admin123!\"
 }")
 
 AUTH_TOKEN=$(echo $LOGIN_RESPONSE | grep -o '"token":"[^"]*' | cut -d'"' -f4)
@@ -144,9 +152,15 @@ GENERATED_VIDEOS_COLUMNS='[
 ]'
 create_table "generated_videos" "$GENERATED_VIDEOS_COLUMNS"
 
-# Insert sample template
+# Get table ID for video_templates
+TABLES_RESPONSE=$(api_call "GET" "db/meta/projects/$BASE_ID/tables")
+TABLE_ID=$(echo "$TABLES_RESPONSE" | grep -o '"id":"[^"]*".*"table_name":"video_templates"' | head -1 | grep -o '"id":"[^"]*' | cut -d'"' -f4)
+echo "Video Templates Table ID: $TABLE_ID"
+
+# Insert sample template using v2 API
 echo "Inserting sample template..."
-api_call "POST" "db/data/v1/$BASE_ID/video_templates/records" "{
+api_call "POST" "api/v2/tables/$TABLE_ID/records" "{
+    \"id\": 1,
     \"name\": \"Basic TikTok Template\",
     \"description\": \"A simple template with text overlay and background image\",
     \"duration\": 30,
@@ -174,5 +188,21 @@ api_call "POST" "db/data/v1/$BASE_ID/video_templates/records" "{
         ]
     }
 }"
+
+# Update .env file with the new token
+if [ -f ".env" ]; then
+    if grep -q "NOCODB_TOKEN=" .env; then
+        # Replace existing token
+        sed -i.bak "s/NOCODB_TOKEN=.*/NOCODB_TOKEN=$AUTH_TOKEN/" .env
+        rm -f .env.bak
+        echo "Updated existing NOCODB_TOKEN in .env file"
+    else
+        # Add token if it doesn't exist
+        echo "NOCODB_TOKEN=$AUTH_TOKEN" >> .env
+        echo "Added NOCODB_TOKEN to .env file"
+    fi
+else
+    echo "Warning: .env file not found. Create it and add NOCODB_TOKEN=$AUTH_TOKEN"
+fi
 
 echo -e "${GREEN}NocoDB setup completed successfully!${NC}"
