@@ -49,7 +49,7 @@ logging.getLogger('werkzeug').addHandler(file_handler)
 
 # Configuration
 NOCODB_URL = os.environ.get("NOCODB_URL", "http://localhost:8080")
-NOCODB_TOKEN = os.environ.get("NOCODB_AUTH_TOKEN")
+NOCODB_TOKEN = os.environ.get("NOCODB_TOKEN")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 MINIO_ACCESS_KEY = os.environ.get("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.environ.get("MINIO_SECRET_KEY", "minioadmin")
